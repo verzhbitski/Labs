@@ -1,11 +1,9 @@
 // Вариант 17 Jerome Boateng
 
-program IV_17;
-
+program III_17;
 type
   polynom = ^list;
   list = record
-    sgn: integer;
     cft: integer;
     deg: integer;
     next: polynom;
@@ -13,7 +11,7 @@ type
 
 var
   a, b, c: polynom;
-
+  
 //---------------------------/Вспомогательные процедуры/------------------------
 function isDigit(x: char): boolean;
 begin
@@ -33,14 +31,16 @@ end;
 function SearchDegree(x: polynom; var w: polynom; k: integer): boolean;
 begin
   SearchDegree := false;
-  repeat
+  while x <> nil do
+  begin
     if x^.deg = k then
     begin
+      w := x;
       SearchDegree := true;
       break
     end else
       x := x^.next;
-  until x^.next = nil
+  end;
 end;
 //------------------------------------------------------------------------------
 
@@ -48,16 +48,22 @@ end;
 procedure ReadPolynom(var x: polynom);
 var
   tmp: polynom;
-  sgn_tmp: integer;
-  cft_tmp, deg_tmp, cft_acc, deg_acc: integer;
-  deg_flag: boolean;
+  deg_flag, zf, flag: boolean;
+  cft_tmp, cft_acc, deg_tmp, deg_acc, sgn: integer;
   y: char;
 begin
-  sgn_tmp := 1;
+  sgn := 1;
+  zf := false;
   repeat
-    read(y);
+  read(y);
+  
+  if not flag then
+    if y='0' then zf := true;
     
-    //Обработка знака
+  flag := not flag;
+   
+  
+  //Обработка знака
     if isSign(y) then
     begin
       if x = nil then
@@ -66,9 +72,8 @@ begin
         x := tmp;
         x^.next := nil;
         if cft_acc = 0 then x^.cft := 1
-        else x^.cft := cft_acc;
+        else x^.cft := sgn * cft_acc;
         x^.deg := deg_acc;
-        x^.sgn := sgn_tmp;
       end else
       begin
         tmp := x;
@@ -78,9 +83,8 @@ begin
         tmp := tmp^.next;
         tmp^.next := nil;
         if cft_acc = 0 then tmp^.cft := 1
-        else tmp^.cft := cft_acc;
+        else tmp^.cft := sgn * cft_acc;
         tmp^.deg := deg_acc;
-        tmp^.sgn := sgn_tmp;
       end;
       
       cft_tmp := 0;
@@ -89,7 +93,7 @@ begin
       deg_acc := 0;
       deg_flag := false;
       
-      if y = '-' then sgn_tmp := -1;
+      if y = '-' then sgn := -1 else sgn := 1;
       
     end;
     //---------------
@@ -100,7 +104,7 @@ begin
     begin
       deg_flag := true;
       deg_acc := 0;
-    end;  
+    end; 
     
     //Обработка цифр
     if isDigit(y) then
@@ -124,9 +128,8 @@ begin
     x := tmp;
     x^.next := nil;
     if cft_acc = 0 then x^.cft := 1
-    else x^.cft := cft_acc;
+    else x^.cft := sgn * cft_acc;
     x^.deg := deg_acc;
-    x^.sgn := sgn_tmp;
     
   end else
   begin
@@ -137,10 +140,11 @@ begin
     tmp := tmp^.next;
     tmp^.next := nil;
     if cft_acc = 0 then tmp^.cft := 1
-    else tmp^.cft := cft_acc;
+    else tmp^.cft := sgn * cft_acc;
     tmp^.deg := deg_acc;
-    tmp^.sgn := sgn_tmp;
   end;
+  
+  if zf then x^.cft := 0;
   
 end;
 //------------------------------------------------------------------------------
@@ -151,20 +155,20 @@ var
   tmp: polynom;
 begin
   tmp := x;
-  if tmp^.sgn = -1 then write('-');
   if tmp^.cft <> 1 then write(tmp^.cft);
   if tmp^.deg = 1 then write('x') 
   else if tmp^.deg <> 0 then write('x^', tmp^.deg); 
   tmp := tmp^.next;
   while tmp <> nil do
   begin
-    case tmp^.sgn of
-      -1: write('-');
-      1: write('+');
-    end;
+  if tmp^.cft <> 0 then
+  begin
+    if tmp^.cft > 0 then write('+');
     if tmp^.cft <> 1 then write(tmp^.cft);
+    if (tmp^.cft = 1) and (tmp^.deg = 0) then write(1);
     if tmp^.deg = 1 then write('x') 
     else if tmp^.deg <> 0 then write('x^', tmp^.deg);
+  end;
     tmp := tmp^.next;
   end;
 end;
@@ -173,8 +177,16 @@ end;
 //--------------------------/Произведение многочленов/--------------------------
 procedure MultiplyPolynom(x, y: polynom; var z: polynom);
 var
-  tmp1, tmp2, tmp3: polynom;
+  tmp1, tmp2, tmp3, tmp: polynom;
 begin
+
+  if (x^.cft = 0) or (y^.cft = 0) then
+  begin
+    new(z);
+    z^.cft := 0
+  end else
+  begin
+
   tmp1 := x;
   while tmp1 <> nil do
   begin
@@ -188,34 +200,48 @@ begin
         z^.next := nil;
         z^.cft := tmp1^.cft * tmp2^.cft;
         z^.deg := tmp1^.deg + tmp2^.deg;
-        z^.sgn := tmp1^.sgn * tmp2^.sgn;
       end else
       begin
         tmp3 := z;
         while tmp3^.next <> nil do
           tmp3 := tmp3^.next;
-        new(tmp3^.next);
-        tmp3 := tmp3^.next;
-        tmp3^.next := nil;
-        tmp3^.cft := tmp1^.cft * tmp2^.cft;
-        tmp3^.deg := tmp1^.deg + tmp2^.deg;
-        tmp3^.sgn := tmp1^.sgn * tmp2^.sgn;
+          
+        if searchDegree(z, tmp, (tmp1^.deg + tmp2^.deg)) then
+        begin
+          tmp^.cft := tmp^.cft + (tmp1^.cft * tmp2^.cft);
+        end else
+        begin
+        tmp3 := z;
+        if tmp3^.next <> nil then
+        while ((tmp3^.deg > tmp1^.deg + tmp2^.deg)) do
+        begin
+          if tmp3^.next^.next = nil then
+          begin
+            tmp3 := tmp3^.next;
+            break;
+          end;
+          tmp3 := tmp3^.next;
+        end;
+          new(tmp);
+          tmp^.next := tmp3^.next;
+          tmp3^.next := tmp;
+          tmp^.cft := tmp1^.cft * tmp2^.cft;
+          tmp^.deg := tmp1^.deg + tmp2^.deg;
+          end;
       end;
       tmp2 := tmp2^.next;
     end;
     tmp1 := tmp1^.next;
   end;
+  end;
 end;
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-//-----------------------------------/MAIN/-------------------------------------
-//------------------------------------------------------------------------------
 
+//------------------------------/MAIN/------------------------------------------ 
 begin
-  ReadPolynom(a);
-  ReadPolynom(b);
-  MultiplyPolynom(a, b, c);
-  PrintPolynom(c);
-  writeln;
-end.
+  readpolynom(a);
+  readpolynom(b);
+  multiplypolynom(a,b,c);
+  printpolynom(c);
+end. 
