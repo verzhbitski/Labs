@@ -1,4 +1,4 @@
-program Sorting;
+п»їprogram Sorting;
 
 const
   MAXN = 1000;
@@ -197,19 +197,19 @@ end;
 procedure printTable();
 var i, k : longint;
 begin
-	writeln('                          Сортировка Простым Слиянием                 ');
+	writeln('                          РЎРѕСЂС‚РёСЂРѕРІРєР° РџСЂРѕСЃС‚С‹Рј РЎР»РёСЏРЅРёРµРј                 ');
 	writeln('----------------------------------------------------------------------');
-	writeln('|  n   |  параметр  |       номер последовательности       | среднее |');
-	writeln('|      |            |       1     2     3     4     5      | значение|'); 
+	writeln('|  n   |  РїР°СЂР°РјРµС‚СЂ  |       РЅРѕРјРµСЂ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё       | СЃСЂРµРґРЅРµРµ |');
+	writeln('|      |            |       1     2     3     4     5      | Р·РЅР°С‡РµРЅРёРµ|'); 
 	writeln('----------------------------------------------------------------------');
 	for i := 1 to 4 do
 	begin
-		write('| ', tests[i]:3, '  | сравнения  |    ');
+		write('| ', tests[i]:3, '  | СЃСЂР°РІРЅРµРЅРёСЏ  |    ');
 		for k := 1 to 5 do
 			write(statTable[i].ms[k].first:4, '  ');
 		writeln('    |  ', statTable[i].midVal.first:4,'   |');
 		
-		write('|      | перемещения|    ');
+		write('|      | РїРµСЂРµРјРµС‰РµРЅРёСЏ|    ');
 		for k := 1 to 5 do
 			write(statTable[i].ms[k].second:4, '  ');
 		writeln('    |  ', statTable[i].midVal.second:4,'   |');

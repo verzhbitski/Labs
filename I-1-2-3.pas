@@ -1,4 +1,4 @@
-program semestr1;
+﻿program semestr1;
 
 const
   eps = 0.001;
